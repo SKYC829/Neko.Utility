@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Neko.Utility.Common
@@ -101,6 +102,86 @@ namespace Neko.Utility.Common
 
             }
             return result;
+        }
+
+        /// <summary>
+        /// 根据对象和权重字典返回权重最大的前count个元素
+        /// </summary>
+        /// <typeparam name="TItem">对象类型</typeparam>
+        /// <param name="probabilityMaps">权重字典</param>
+        /// <param name="count">元素个数</param>
+        /// <returns></returns>
+        public static TItem[] Draw<TItem>(IDictionary<TItem,double> probabilityMaps,int count)
+        {
+            List<TItem> result = new List<TItem>();
+            if(probabilityMaps == null)
+            {
+                throw new ArgumentNullException(nameof(probabilityMaps), "权重字典不允许为空!");
+            }
+            if(probabilityMaps.Count <= 0)
+            {
+                return result.ToArray();
+            }
+            if(probabilityMaps.Count < count)
+            {
+                count = probabilityMaps.Count;
+            }
+            List<KeyValuePair<TItem, double>> sortResult = probabilityMaps.Sort().GetRange(0, count);
+            result.AddRange(sortResult.Select(p => p.Key));
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// 根据权重随机返回一组对象中前count个元素
+        /// </summary>
+        /// <typeparam name="TItem">对象类型</typeparam>
+        /// <param name="items">对象列表</param>
+        /// <param name="probability">权重列表</param>
+        /// <param name="count">元素个数</param>
+        /// <returns></returns>
+        public static TItem[] Draw<TItem>(IList<TItem> items,IList<double> probability,int count)
+        {
+            Random random = new Random();
+            Dictionary<TItem, double> probabilityMaps = new Dictionary<TItem, double>();
+            if(items == null)
+            {
+                throw new NullReferenceException("参数items不允许为空!");
+            }
+            if(probability == null)
+            {
+                probability = new List<double>();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    probability.Add(1);
+                }
+            }
+            if(items.Count < count)
+            {
+                count = items.Count;
+            }
+            for (int i = 0; i < items.Count; i++)
+            {
+                double probabilityValue = Math.Max(0d, (double)random.Next(100) * probability.ElementAt(i));
+                probabilityMaps.Add(items.ElementAt(i), probabilityValue);
+            }
+            return Draw<TItem>(probabilityMaps, count);
+        }
+
+        /// <summary>
+        /// 随机返回一组对象中前count个元素
+        /// </summary>
+        /// <typeparam name="TItem">对象类型</typeparam>
+        /// <param name="items">对象列表</param>
+        /// <param name="count">元素个数</param>
+        /// <returns></returns>
+        public static TItem[] Draw<TItem>(IList<TItem> items,int count)
+        {
+            List<double> probability = new List<double>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                probability.Add(1);
+            }
+            return Draw<TItem>(items, probability, count);
         }
     }
 }
