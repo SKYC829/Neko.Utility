@@ -294,7 +294,7 @@ namespace Neko.Utility.Data
                     List<object> objList = ConvertList<object>(resList).ToList();
                     if(!(obj is JObject))
                     {
-                        throw new NotImplementedException();
+                        Set(obj, fieldName, objList);
                     }
                     result = objList;
                 }
