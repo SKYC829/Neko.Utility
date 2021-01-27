@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 
@@ -255,7 +256,7 @@ namespace Neko.Utility.Data
             }
             else if(obj is DataRow)
             {
-                throw new NotImplementedException();
+                result = RowUtil.Get((DataRow)obj, fieldName);
             }
             else if(obj is JObject)
             {
@@ -337,6 +338,118 @@ namespace Neko.Utility.Data
             }
             return obj;
         }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>的指定类型
+        /// </summary>
+        /// <typeparam name="TResult">值类型</typeparam>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static TResult Get<TResult>(object obj,string fieldName)
+        {
+            object res = Get(obj, fieldName);
+            return StringUtil.Get<TResult>(res);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static bool GetBoolean(object obj,string fieldName)
+        {
+            return Get<bool>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static string GetString(object obj,string fieldName)
+        {
+            return Get<string>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static int GetInt(object obj,string fieldName)
+        {
+            return Get<int>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static double GetDouble(object obj,string fieldName)
+        {
+            return Get<double>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static float GetFloat(object obj,string fieldName)
+        {
+            return Get<float>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static short GetShort(object obj,string fieldName)
+        {
+            return Get<short>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static decimal GetDecimal(object obj,string fieldName)
+        {
+            return Get<decimal>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static BigInteger GetBigInteger(object obj,string fieldName)
+        {
+            return Get<BigInteger>(obj, fieldName);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="Get(object, string)"/>
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">属性或字段的名称</param>
+        /// <returns></returns>
+        public static DateTime? GetDateTime(object obj,string fieldName)
+        {
+            return Get<DateTime>(obj, fieldName);
+        }
     }
 
     /// <summary>
@@ -393,11 +506,18 @@ namespace Neko.Utility.Data
             }
             else if(obj is DataRow)
             {
-                throw new NotImplementedException();
+                RowUtil.Set((DataRow)obj, fieldName, value);
             }
             else if(obj is DataTable)
             {
-                throw new NotImplementedException();
+                DataTable dataTable = obj as DataTable;
+                if(dataTable != null)
+                {
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        Set(row, fieldName, value);
+                    }
+                }
             }
             else if(obj is JObject)
             {
