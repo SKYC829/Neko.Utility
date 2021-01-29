@@ -19,7 +19,6 @@ namespace Neko.Utility.IO
         /// </summary>
         /// <param name="key">密钥</param>
         /// <param name="keyLength">密钥长度</param>
-        /// <param name="iv"><see cref="SymmetricAlgorithm.IV"/></param>
         /// <returns></returns>
         private static byte[] GetKeyBytes(string key,int keyLength)
         {
