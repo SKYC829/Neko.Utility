@@ -12,4 +12,11 @@ namespace Neko.Utility
     /// <param name="fileSize">文件总大小</param>
     /// <param name="isFolder">当前是否是文件夹(true:文件夹,flase:文件)</param>
     public delegate void CompressDelegateCode(string fileName,double compressedSize, double fileSize,bool isFolder);
+
+    /// <summary>
+    /// 有返回值的空参数委托方法
+    /// </summary>
+    /// <typeparam name="TResult">返回值类型</typeparam>
+    /// <returns></returns>
+    public delegate TResult ExecuteCode<TResult>();
 }
