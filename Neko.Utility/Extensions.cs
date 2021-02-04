@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Neko.Utility.IO.Logging;
 using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Neko.Utility
 {
@@ -83,6 +84,49 @@ namespace Neko.Utility
             });
         }
         #endregion
+        #endregion
+
+        #region 文件扩展
+        /// <summary>
+        /// 获取文件类型
+        /// <para>目前仅支持部分图片类型</para>
+        /// </summary>
+        /// <param name="file">文件信息</param>
+        /// <returns></returns>
+        public static string GetMimeType(this FileInfo file)
+        {
+            if(file == null)
+            {
+                throw new ArgumentNullException(nameof(file), "文件信息不允许为空!");
+            }
+            if (!file.Exists)
+            {
+                throw new FileNotFoundException("文件不存在!", file.FullName);
+            }
+            byte[] fileData = File.ReadAllBytes(file.FullName);
+            string defaultResult = file.Extension.Replace(".", "").ToUpper();
+            if (fileData == null || fileData.Length < 10)
+            {
+                return defaultResult;
+            }
+            if(fileData[0] == 71 && fileData[1] == 73 && fileData[2] == 70)
+            {
+                return "GIF";
+            }
+            if(fileData[1] == 80 && fileData[2] == 78 && fileData[3] == 71)
+            {
+                return "PNG";
+            }
+            if(fileData[6] == 74 && fileData[7] == 70 && fileData[8] == 73 && fileData[9] == 70)
+            {
+                return "JPG";
+            }
+            if(fileData[0] == 66 && fileData[1] == 77)
+            {
+                return "BMP";
+            }
+            return defaultResult;
+        }
         #endregion
     }
 }
