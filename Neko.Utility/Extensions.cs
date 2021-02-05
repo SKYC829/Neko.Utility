@@ -118,10 +118,10 @@ namespace Neko.Utility
                 IQueryable<Type> injectInstances = instanceAssembly.GetTypes().Where(p => p.IsClass && @interface.IsAssignableFrom(p) && !p.IsAbstract).AsQueryable();
                 foreach (Type instance in injectInstances)
                 {
-                    IQueryable<Type> implememtInterfaces = instance.GetInterfaces().Where(p => p != baseType).AsQueryable();
+                    IQueryable<Type> implememtInterfaces = instance.GetInterfaces().AsQueryable(); //.Where(p => p != baseType) 如果不希望使用基接口,可以加上这个where
                     foreach (Type implememtInterface in implememtInterfaces)
                     {
-                        services.AddScoped(implememtInterface, instance);
+                        services.AddScoped(implememtInterface, instance); //如果不希望使用Scoped,可以加上一个自定义特性,然后根据特性判断使用Scoped还是Singleton
                     }
                 }
             }
