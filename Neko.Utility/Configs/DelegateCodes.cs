@@ -14,7 +14,12 @@ namespace Neko.Utility
     public delegate void CompressDelegateCode(string fileName,double compressedSize, double fileSize,bool isFolder);
 
     /// <summary>
-    /// 有返回值的空参数委托方法
+    /// 空参数委托方法
+    /// </summary>
+    public delegate void ExecuteCode();
+
+    /// <summary>
+    /// 有返回值的<inheritdoc cref="ExecuteCode"/>
     /// </summary>
     /// <typeparam name="TResult">返回值类型</typeparam>
     /// <returns></returns>
