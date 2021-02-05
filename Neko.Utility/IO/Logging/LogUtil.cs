@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Neko.Utility.Data;
+using Neko.Utility.Threading;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +36,11 @@ namespace Neko.Utility.IO.Logging
         /// </summary>
         private static void StartLog()
         {
-            //TODO:开启线程循环输出日志到文件
+            ThreadUtil.RunThreadLoop(new IntervalInfo()
+            {
+                Interval = 100,
+                ExecuteCode = LogToFile
+            }).Name = "输出日志线程";
         }
 
         /// <summary>
@@ -128,6 +133,11 @@ namespace Neko.Utility.IO.Logging
             } while (true);
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="args">日志信息参数</param>
         public static void WriteDebug(string logMessage, params object[] args)
         {
             string message = logMessage;
@@ -138,6 +148,11 @@ namespace Neko.Utility.IO.Logging
             WriteLog(LogLevel.Debug, message, null);
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="args">日志信息参数</param>
         public static void WriteException(string logMessage, params object[] args)
         {
             string message = logMessage;
@@ -148,11 +163,21 @@ namespace Neko.Utility.IO.Logging
             WriteException(message, new Exception(message));
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="exception">异常信息</param>
         public static void WriteException(string logMessage,Exception exception)
         {
             WriteLog(LogLevel.Error, logMessage, exception);
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="args">日志信息参数</param>
         public static void WriteInformation(string logMessage, params object[] args)
         {
             string message = logMessage;
@@ -163,6 +188,11 @@ namespace Neko.Utility.IO.Logging
             WriteLog(LogLevel.Information, message, null);
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="args">日志信息参数</param>
         public static void WriteTrace(string logMessage, params object[] args)
         {
             string message = logMessage;
@@ -173,6 +203,11 @@ namespace Neko.Utility.IO.Logging
             WriteLog(LogLevel.Trace, message, null);
         }
 
+        /// <summary>
+        /// <inheritdoc cref="WriteLog(LogLevel, string, Exception)"/>
+        /// </summary>
+        /// <param name="logMessage">日志信息</param>
+        /// <param name="args">日志信息参数</param>
         public static void WriteWarning(string logMessage, params object[] args)
         {
             string message = logMessage;
