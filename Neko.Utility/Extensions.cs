@@ -7,6 +7,12 @@ using Microsoft.Extensions.Logging;
 using Neko.Utility.IO.Logging;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Neko.Utility.Common;
+using System.Drawing;
+using System.Drawing.Imaging;
+using Neko.Utility.IO;
+using System.Reflection;
+using System.Linq;
 
 namespace Neko.Utility
 {
@@ -84,6 +90,44 @@ namespace Neko.Utility
             });
         }
         #endregion
+        #region 依赖注入扩展
+        /// <summary>
+        /// 自动批量依赖注入
+        /// </summary>
+        /// <typeparam name="TBaseInterface">基接口</typeparam>
+        /// <param name="services">服务</param>
+        /// <param name="interfaceAssemblyStr">依赖注入接口所在程序集文件路径</param>
+        /// <param name="instanceAssemblyStr">依赖注入实例所在程序集文件路径</param>
+        /// <returns></returns>
+        public static IServiceCollection AutoDependencyInject<TBaseInterface>(this IServiceCollection services,string interfaceAssemblyStr,string instanceAssemblyStr)
+        {
+            Type baseType = typeof(TBaseInterface);
+            Assembly interfaceAssembly = Assembly.LoadFrom(new FileInfo(interfaceAssemblyStr).FullName);
+            Assembly instanceAssembly = Assembly.LoadFrom(new FileInfo(instanceAssemblyStr).FullName);
+            if(interfaceAssembly == null)
+            {
+                throw new FileNotFoundException("无法加载程序集:[{0}],文件不存在!", interfaceAssemblyStr);
+            }
+            if(instanceAssembly == null)
+            {
+                throw new FileNotFoundException("无法加载程序集:[{0}],文件不存在!", instanceAssemblyStr);
+            }
+            IQueryable<Type> injectInterfaces = interfaceAssembly.GetTypes().Where(p => p.IsInterface && baseType.IsAssignableFrom(p)).AsQueryable();
+            foreach (Type @interface in injectInterfaces)
+            {
+                IQueryable<Type> injectInstances = instanceAssembly.GetTypes().Where(p => p.IsClass && @interface.IsAssignableFrom(p) && !p.IsAbstract).AsQueryable();
+                foreach (Type instance in injectInstances)
+                {
+                    IQueryable<Type> implememtInterfaces = instance.GetInterfaces().Where(p => p != baseType).AsQueryable();
+                    foreach (Type implememtInterface in implememtInterfaces)
+                    {
+                        services.AddScoped(implememtInterface, instance);
+                    }
+                }
+            }
+            return services;
+        }
+        #endregion
         #endregion
 
         #region 文件扩展
@@ -126,6 +170,155 @@ namespace Neko.Utility
                 return "BMP";
             }
             return defaultResult;
+        }
+        #endregion
+
+        #region 字符串和时间戳
+        /// <summary>
+        /// <inheritdoc cref="StringUtil.GetTimeStamp(DateTime)"/>
+        /// </summary>
+        /// <param name="dateTime">时间</param>
+        /// <returns></returns>
+        public static string ToTimeStamp(this DateTime dateTime)
+        {
+            return StringUtil.GetTimeStamp(dateTime);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="StringUtil.GetTimeStamp(string)"/> 或<inheritdoc cref="StringUtil.GetDateTime(object)"/>
+        /// </summary>
+        /// <param name="value">字符串</param>
+        /// <returns></returns>
+        public static DateTime? ToDateTime(this string value)
+        {
+            DateTime? result = null;
+            try
+            {
+                result = StringUtil.GetTimeStamp(value);
+            }
+            catch
+            {
+                result = StringUtil.GetDateTime(value);
+            }
+            return result;
+        }
+        #endregion
+
+        #region 序列化
+
+        /// <summary>
+        /// <inheritdoc cref="SerializeUtil.ToBinary(object)"/>
+        /// </summary>
+        /// <param name="serializableObj">可序列化对象</param>
+        /// <returns></returns>
+        public static byte[] ObjectToBinary(this object serializableObj)
+        {
+            return SerializeUtil.ToBinary(serializableObj);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="SerializeUtil.FromBinary(byte[])"/>
+        /// </summary>
+        /// <typeparam name="TResult">对象类型</typeparam>
+        /// <param name="binaryBytes">二进制数据</param>
+        /// <returns></returns>
+        public static TResult BinaryToObject<TResult>(this byte[] binaryBytes)
+        {
+            return SerializeUtil.FromBinary<TResult>(binaryBytes);
+        }
+
+        /// <summary>
+        /// 将图片转换为Base64字符串
+        /// </summary>
+        /// <param name="image">图片</param>
+        /// <param name="format">图片格式</param>
+        /// <returns></returns>
+        public static string ImageToBase64(this Image image,ImageFormat format)
+        {
+            string result = string.Empty;
+            using (Bitmap bmp = new Bitmap(image))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bmp.Save(ms, format);
+                    byte[] imgBytes = new byte[ms.Length];
+                    ms.Position = 0;
+                    ms.Read(imgBytes, 0, imgBytes.Length);
+                    result = Convert.ToBase64String(imgBytes);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 将base64字符串转换为图片
+        /// </summary>
+        /// <param name="base64Str">Base64字符串</param>
+        /// <returns></returns>
+        public static Image Base64ToImage(this string base64Str)
+        {
+            byte[] bytes = Convert.FromBase64String(base64Str);
+            using (MemoryStream ms = new MemoryStream(bytes))
+            {
+                Image img = Image.FromStream(ms);
+                return new Bitmap(img);
+            }
+        }
+        #endregion
+
+        #region 加密
+        /// <summary>
+        /// <inheritdoc cref="EncryptionUtil.EncryptMD5(object)"/>
+        /// </summary>
+        /// <param name="content">待加密对象</param>
+        /// <returns></returns>
+        public static string MD5(this object content)
+        {
+            return EncryptionUtil.EncryptMD5(content);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="EncryptionUtil.EncryptSHA1(object)"/>
+        /// </summary>
+        /// <param name="content">待加密对象</param>
+        /// <returns></returns>
+        public static string SHA1(this object content)
+        {
+            return EncryptionUtil.EncryptSHA1(content);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="EncryptionUtil.EncryptSHA256(object)"/>
+        /// </summary>
+        /// <param name="content">待加密对象</param>
+        /// <returns></returns>
+        public static string SHA256(this object content)
+        {
+            return EncryptionUtil.EncryptSHA256(content);
+        }
+        #endregion
+
+        #region 数据压缩
+        /// <summary>
+        /// <inheritdoc cref="ZipExecute.Compress(byte[])"/>
+        /// </summary>
+        /// <param name="bytes">字节数组</param>
+        /// <returns></returns>
+        public static byte[] Compress(this byte[] bytes)
+        {
+            ZipExecute execute = new ZipExecute();
+            return execute.Compress(bytes);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="ZipExecute.Decompress(byte[])"/>
+        /// </summary>
+        /// <param name="bytes">字节数组</param>
+        /// <returns></returns>
+        public static byte[] Decompress(this byte[] bytes)
+        {
+            ZipExecute execute = new ZipExecute();
+            return execute.Decompress(bytes);
         }
         #endregion
     }
