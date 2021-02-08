@@ -126,7 +126,9 @@ namespace Neko.Utility.Common
             {
                 count = probabilityMaps.Count;
             }
-            List<KeyValuePair<TItem, double>> sortResult = probabilityMaps.Sort().GetRange(0, count);
+            List<KeyValuePair<TItem, double>> sortResult = probabilityMaps.Sort();
+            sortResult.Reverse();
+            sortResult = sortResult.GetRange(0, count);
             result.AddRange(sortResult.Select(p => p.Key));
             return result.ToArray();
         }
