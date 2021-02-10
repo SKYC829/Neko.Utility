@@ -1,4 +1,5 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+﻿using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Zip;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -183,7 +184,7 @@ namespace Neko.Utility.IO
             }
             using (MemoryStream ms = new MemoryStream())
             {
-                using (ZipOutputStream outputStream = new ZipOutputStream(ms))
+                using (GZipOutputStream outputStream = new GZipOutputStream(ms))
                 {
                     outputStream.SetLevel(8);
                     outputStream.Write(bytes, 0, bytes.Length);
@@ -287,7 +288,7 @@ namespace Neko.Utility.IO
             }
             using (MemoryStream inputStream = new MemoryStream(bytes))
             {
-                using (ZipInputStream unzipSyream = new ZipInputStream(inputStream))
+                using (GZipInputStream unzipSyream = new GZipInputStream(inputStream))
                 {
                     using (MemoryStream outputStream = new MemoryStream())
                     {
@@ -296,7 +297,7 @@ namespace Neko.Utility.IO
                         do
                         {
                             readNum = unzipSyream.Read(dataBytes, 0, dataBytes.Length);
-                            outputStream.Write(dataBytes, 0, dataBytes.Length);
+                            outputStream.Write(dataBytes, 0, readNum);
                         } while (readNum > 0);
                         result = outputStream.ToArray();
                     }
