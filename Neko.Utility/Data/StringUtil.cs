@@ -349,7 +349,8 @@ namespace Neko.Utility.Data
         {
             if (ObjectUtil.IsEmpty(obj))
             {
-                throw new ArgumentNullException(nameof(obj), "无法转换空对象!");
+                //throw new ArgumentNullException(nameof(obj), "无法转换空对象!");
+                return default;
             }
             object result = default;
             if(toType.IsClass && obj is JObject)

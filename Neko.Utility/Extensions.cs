@@ -47,9 +47,11 @@ namespace Neko.Utility
         /// 是否是单例模式
         /// <para>如果为false,则每次请求都会单独记录耗时</para>
         /// </param>
+        /// <param name="splitByLevel">为每个日志等级单独创建日志文件</param>
         /// <returns></returns>
-        public static IServiceCollection AddNekoLog(this IServiceCollection services,LogLevel logLevel,double minimunRecordInterval,bool isSingleton)
+        public static IServiceCollection AddNekoLog(this IServiceCollection services,LogLevel logLevel,double minimunRecordInterval,bool isSingleton = false,bool splitByLevel = false)
         {
+            LogUtil.SplitByLevel = splitByLevel;
             if (isSingleton)
             {
                 services.AddNekoLogSingleton(logLevel, minimunRecordInterval);
@@ -92,7 +94,7 @@ namespace Neko.Utility
         #endregion
         #region 依赖注入扩展
         /// <summary>
-        /// 自动批量依赖注入
+        /// 自动批量依赖注入,默认使用Scoped
         /// </summary>
         /// <typeparam name="TBaseInterface">基接口</typeparam>
         /// <param name="services">服务</param>
@@ -101,14 +103,32 @@ namespace Neko.Utility
         /// <returns></returns>
         public static IServiceCollection AutoDependencyInject<TBaseInterface>(this IServiceCollection services,string interfaceAssemblyStr,string instanceAssemblyStr)
         {
+            services.AutoDependencyInject<TBaseInterface>(interfaceAssemblyStr, instanceAssemblyStr, (serves, @interface, instance) =>
+            {
+                serves.AddScoped(@interface, instance);
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 自动批量依赖注入
+        /// </summary>
+        /// <typeparam name="TBaseInterface">基接口</typeparam>
+        /// <param name="services">服务</param>
+        /// <param name="interfaceAssemblyStr">依赖注入接口所在程序集文件路径</param>
+        /// <param name="instanceAssemblyStr">依赖注入实例所在程序集文件路径</param>
+        /// <param name="injectAction">注入操作委托方法,允许自定不同类型的注入形式</param>
+        /// <returns></returns>
+        public static IServiceCollection AutoDependencyInject<TBaseInterface>(this IServiceCollection services,string interfaceAssemblyStr,string instanceAssemblyStr,Action<IServiceCollection,Type,Type> injectAction)
+        {
             Type baseType = typeof(TBaseInterface);
             Assembly interfaceAssembly = Assembly.LoadFrom(new FileInfo(interfaceAssemblyStr).FullName);
             Assembly instanceAssembly = Assembly.LoadFrom(new FileInfo(instanceAssemblyStr).FullName);
-            if(interfaceAssembly == null)
+            if (interfaceAssembly == null)
             {
                 throw new FileNotFoundException("无法加载程序集:[{0}],文件不存在!", interfaceAssemblyStr);
             }
-            if(instanceAssembly == null)
+            if (instanceAssembly == null)
             {
                 throw new FileNotFoundException("无法加载程序集:[{0}],文件不存在!", instanceAssemblyStr);
             }
@@ -121,7 +141,8 @@ namespace Neko.Utility
                     IQueryable<Type> implememtInterfaces = instance.GetInterfaces().AsQueryable(); //.Where(p => p != baseType) 如果不希望使用基接口,可以加上这个where
                     foreach (Type implememtInterface in implememtInterfaces)
                     {
-                        services.AddScoped(implememtInterface, instance); //如果不希望使用Scoped,可以加上一个自定义特性,然后根据特性判断使用Scoped还是Singleton
+                        //services.AddScoped(implememtInterface, instance); //如果不希望使用Scoped,可以加上一个自定义特性,然后根据特性判断使用Scoped还是Singleton
+                        injectAction?.Invoke(services, implememtInterface, instance);
                     }
                 }
             }

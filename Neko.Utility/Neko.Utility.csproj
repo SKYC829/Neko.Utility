@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>SKYC</Authors>
-    <Version>1.0.1.1</Version>
+    <Version>1.0.2</Version>
     <Company>Skycompany</Company>
     <Description>封装了一些适用于Framework和NetCore的帮助类及扩展方法</Description>
     <PackageProjectUrl>https://github.com/SKYC829/Neko.Utility</PackageProjectUrl>

@@ -151,7 +151,12 @@ namespace Neko.Utility.Common
             {
                 configuration = QbCodeConfiguration.BarCodeDefault;
             }
+#if NETSTANDARD2_0
             BarcodeWriter writer = new BarcodeWriter();
+#elif NETCOREAPP3_1
+            ZXing.BarcodeWriter<Bitmap> writer = new ZXing.BarcodeWriter<Bitmap>();
+            writer.Renderer = new BitmapRenderer();
+#endif
             writer.Format = BarcodeFormat.CODE_128;
             writer.Options = new EncodingOptions()
             {
@@ -192,7 +197,11 @@ namespace Neko.Utility.Common
             {
                 throw new ArgumentNullException(nameof(code), "图片资源不存在!");
             }
+#if NETSTANDARD2_0
             BarcodeReader reader = new BarcodeReader();
+#elif NETCOREAPP3_1
+            ZXing.BarcodeReader<Bitmap> reader = new ZXing.BarcodeReader<Bitmap>(null,(bitmap)=>new ZXing.BitmapLuminanceSource(bitmap),null);
+#endif
             reader.Options = new DecodingOptions()
             {
                 CharacterSet = charset,

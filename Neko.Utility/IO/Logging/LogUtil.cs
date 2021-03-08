@@ -24,6 +24,11 @@ namespace Neko.Utility.IO.Logging
         /// </summary>
         private static Queue<LogInfo> _logInfos;
 
+        /// <summary>
+        /// 为每个日志等级单独创建日志文件
+        /// </summary>
+        public static bool SplitByLevel { get; set; }
+
         static LogUtil()
         {
             _logCache = new Dictionary<string, LogInfo>();
@@ -71,7 +76,14 @@ namespace Neko.Utility.IO.Logging
                         continue;
                     }
                     string logPath = AppDomain.CurrentDomain.BaseDirectory;
-                    logPath = Path.Combine(logPath, "Temp", "Logs", log.LogLevel.ToString());
+                    if (SplitByLevel)
+                    {
+                        logPath = Path.Combine(logPath, "Temp", "Logs", log.LogLevel.ToString());
+                    }
+                    else
+                    {
+                        logPath = Path.Combine(logPath, "Temp", "Logs");
+                    }
                     if (!Directory.Exists(logPath))
                     {
                         Directory.CreateDirectory(logPath);
